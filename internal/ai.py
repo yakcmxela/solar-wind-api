@@ -1,6 +1,7 @@
 import json
 from openai import AsyncOpenAI
 
+from database.enums import IncentiveType
 from env import OPENAI_API_KEY
 
 client = AsyncOpenAI(api_key=OPENAI_API_KEY)
@@ -20,18 +21,49 @@ class RenewableAI:
         self.thread = await client.chat.conversations.create()
         return self
 
-    async def get_solar_installers(self, location: str):
+    async def get_estimates(
+        self,
+        solarradiation: int,
+        area: int,
+        turbineCount: int,
+        solar_efficiency: float,
+        wind_efficiency: float,
+    ):
+        example_response = {
+            "role": "assistant",
+            "content": json.dumps(
+                {
+                    "power_out": {
+                        "solar": "800kWh",
+                        "wind": "200kWh",
+                        "total": "1000kWh",
+                    }
+                }
+            ),
+        }
+
+        user_prompt_solar = {
+            "role": "user",
+            "content": f"""Give me an area of {area} square meters, with an average solar radiation of 
+                        {solarradiation}, and solar panels with an efficiency rating of {solar_efficiency}%,
+                        estimate the power out in a json format.""",
+        }
+
+        user_prompt_wind = {
+            "role": "user",
+            "content": f"""Give me an area of {area} square meters, with {turbineCount} wind turbines,
+                        and wind turbines with an efficiency rating of {wind_efficiency}%,
+                        estimate the power out in a json format.""",
+        }
+
+        messages = [ai_setup, example_response, user_prompt_solar, user_prompt_wind]
+
         response = await client.chat.completions.create(
             model="gpt-3.5-turbo-0125",
             response_format={"type": "json_object"},
-            messages=[
-                ai_setup,
-                {
-                    "role": "user",
-                    "content": f"Give me a list of certified solar panel installers near {location}",
-                },
-            ],
+            messages=messages,
         )
+
         return response.choices[0].message.content
 
     async def get_incentives(self, location: str, categories: list[str] = []):
@@ -74,9 +106,7 @@ class RenewableAI:
             other = {**example_core, "name": f"Other {category} incentive"}
 
             example_content[category] = [federal, state, other]
-
-        print(example_content)
-
+            
         example_json = {
             "role": "assistant",
             "content": json.dumps(example_content),

@@ -2,7 +2,7 @@ from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
-from data import models, crud, database
+from database import models, crud, database
 
 from internal.ai import RenewableAI
 
@@ -14,6 +14,7 @@ origins = [
 
 ai = RenewableAI()
 app = FastAPI()
+
 
 def get_db():
     db = database.SessionLocal()
@@ -32,26 +33,7 @@ app.add_middleware(
 )
 
 
-@app.get("/")
-async def read_root():
-    return {"Hello": "World"}
-
-
-@app.get("/solar/installers/{location}")
-async def get_solar_potential(solarradiation: str, area: float):
-    response = await ai.calculate_solar_potential(
-        solarradiation=solarradiation, area=area
-    )
-    return {"response": response}
-
-
-@app.get("/solar/panels")
-def get_solar_panels(db: Session = Depends(get_db)):
-    solar_panels = crud.get_solar_panels(db)
-    return {"response": solar_panels}
-
-
-@app.get("/incentives/")
+@app.post("/incentives/")
 async def get_incentives(
     city: str,
     state: str,
@@ -61,3 +43,45 @@ async def get_incentives(
         location=f"{city} {state}", categories=categories.split(",")
     )
     return {"response": response}
+
+
+@app.get("/incentives/types/")
+async def get_incentive_types(db: Session = Depends(get_db)):
+    incentives = crud.get_incentives(db)
+    return {"response": incentives}
+
+
+@app.post("/estimates/")
+async def get_estimates(
+    solarradiation: str,
+    area: float,
+    turbineCount: int,
+    solar_product_id: str,
+    # wind_product_id: str,
+    db: Session = Depends(get_db),
+):
+    solar_product = crud.get_product_by_id(db, solar_product_id)
+    response = await ai.get_estimates(
+        solarradiation=solarradiation,
+        area=area,
+        turbineCount=turbineCount,
+        solar_efficiency=solar_product.efficiency_max,
+        wind_efficiency=0,
+    )
+    return {"response": response}
+
+
+@app.get("/installers/")
+async def get_installers_by_type(
+    city: str, state: str, type: str, db: Session = Depends(get_db)
+):
+    incentive = crud.get_incentive(db, type)
+    response = await ai.get_installers(incentive, f"{city} {state}")
+    return {"response": response}
+
+
+@app.get("/products/type/{type_id}/")
+def get_products_by_incentive(type_id: str, db: Session = Depends(get_db)):
+    print(type_id)
+    products = crud.get_products(db, type_id)
+    return {"response": products}

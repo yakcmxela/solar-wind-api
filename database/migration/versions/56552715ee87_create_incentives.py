@@ -1,22 +1,23 @@
 """create incentives
 
-Revision ID: 5859b3f32836
-Revises: 1aeb105994f9
-Create Date: 2024-05-09 09:43:05.415469
+Revision ID: 56552715ee87
+Revises: 5fc3bbd8f015
+Create Date: 2024-05-09 11:18:21.021337
 
 """
 
 from typing import Sequence, Union
 import uuid
+
 from alembic import op
 import sqlalchemy as sa
 
-from data.enums import IncentiveType
+from database.enums import IncentiveType
 
 
 # revision identifiers, used by Alembic.
-revision: str = "5859b3f32836"
-down_revision: Union[str, None] = "1aeb105994f9"
+revision: str = "56552715ee87"
+down_revision: Union[str, None] = "5fc3bbd8f015"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

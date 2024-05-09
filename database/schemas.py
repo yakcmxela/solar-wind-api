@@ -1,7 +1,7 @@
 from typing import Union
 from pydantic import BaseModel
 
-from data.enums import IncentiveType
+from .enums import IncentiveType
 
 
 class Product(BaseModel):

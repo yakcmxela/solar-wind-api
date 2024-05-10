@@ -1,7 +1,7 @@
 import json
 from openai import AsyncOpenAI
 
-from database.enums import IncentiveType
+from database.models import Product
 from env import OPENAI_API_KEY
 
 client = AsyncOpenAI(api_key=OPENAI_API_KEY)
@@ -23,36 +23,38 @@ class RenewableAI:
 
     async def get_estimates(
         self,
-        solarradiation: int,
-        area: int,
-        turbineCount: int,
-        solar_efficiency: float,
-        wind_efficiency: float,
+        solar_panel_area: float,
+        solar_product: Product,
+        solar_radiation: float,
+        wind_product: Product,
+        wind_speed_average: float,
+        wind_turbine_count: int,
     ):
         example_response = {
             "role": "assistant",
             "content": json.dumps(
                 {
                     "power_out": {
-                        "solar": "800kWh",
-                        "wind": "200kWh",
-                        "total": "1000kWh",
-                    }
+                        "solar": 800,
+                        "wind": 200,
+                        "total": 1000,
+                    },
+                    "units": "kWh",
                 }
             ),
         }
 
         user_prompt_solar = {
             "role": "user",
-            "content": f"""Give me an area of {area} square meters, with an average solar radiation of 
-                        {solarradiation}, and solar panels with an efficiency rating of {solar_efficiency}%,
+            "content": f"""Given an area of {solar_panel_area} square meters, with an average solar radiation of 
+                        {solar_radiation}, and solar panels with a maxefficiency rating of {solar_product.efficiency_max}%,
                         estimate the power out in a json format.""",
         }
 
         user_prompt_wind = {
             "role": "user",
-            "content": f"""Give me an area of {area} square meters, with {turbineCount} wind turbines,
-                        and wind turbines with an efficiency rating of {wind_efficiency}%,
+            "content": f"""Given {wind_turbine_count} wind turbines with an average wind speed of {wind_speed_average},
+                        and wind turbines with a max efficiency rating of {wind_product.efficiency_max}%,
                         estimate the power out in a json format.""",
         }
 
@@ -106,7 +108,7 @@ class RenewableAI:
             other = {**example_core, "name": f"Other {category} incentive"}
 
             example_content[category] = [federal, state, other]
-            
+
         example_json = {
             "role": "assistant",
             "content": json.dumps(example_content),

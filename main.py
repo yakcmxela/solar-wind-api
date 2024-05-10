@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from database import models, crud, database
 
 from internal.ai import RenewableAI
+from internal.weather import WeatherAPI
 
 models.Base.metadata.create_all(bind=database.engine)
 
@@ -13,6 +14,7 @@ origins = [
 ]
 
 ai = RenewableAI()
+weather = WeatherAPI()
 app = FastAPI()
 
 
@@ -53,20 +55,25 @@ async def get_incentive_types(db: Session = Depends(get_db)):
 
 @app.post("/estimates/")
 async def get_estimates(
-    solarradiation: str,
-    area: float,
-    turbineCount: int,
+    lat: float,
+    lng: float,
+    solar_panel_area: float,
     solar_product_id: str,
-    # wind_product_id: str,
+    wind_product_id: str,
+    wind_turbine_count: int,
     db: Session = Depends(get_db),
 ):
     solar_product = crud.get_product_by_id(db, solar_product_id)
+    wind_product = crud.get_product_by_id(db, wind_product_id)
+    weather_data = await weather.get_weather_by_coords(lat, lng)
+
     response = await ai.get_estimates(
-        solarradiation=solarradiation,
-        area=area,
-        turbineCount=turbineCount,
-        solar_efficiency=solar_product.efficiency_max,
-        wind_efficiency=0,
+        solar_panel_area=solar_panel_area,
+        solar_product=solar_product,
+        solar_radiation=weather_data["solar_radiation"],
+        wind_product=wind_product,
+        wind_speed_average=weather_data["wind_speed"],
+        wind_turbine_count=wind_turbine_count,
     )
     return {"response": response}
 
@@ -80,8 +87,14 @@ async def get_installers_by_type(
     return {"response": response}
 
 
-@app.get("/products/type/{type_id}/")
-def get_products_by_incentive(type_id: str, db: Session = Depends(get_db)):
+@app.get("/products/type_id/{type_id}/")
+def get_products_by_type_id(type_id: str, db: Session = Depends(get_db)):
     print(type_id)
-    products = crud.get_products(db, type_id)
+    products = crud.get_products_by_type_id(db, type_id)
+    return {"response": products}
+
+
+@app.get("/products/type/{type}/")
+def get_products_by_type(type: str, db: Session = Depends(get_db)):
+    products = crud.get_products_by_type(db, type)
     return {"response": products}

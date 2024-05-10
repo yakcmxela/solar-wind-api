@@ -35,14 +35,16 @@ app.add_middleware(
 )
 
 
-@app.post("/incentives/")
+@app.get("/incentives/")
 async def get_incentives(
     city: str,
     state: str,
-    categories: str,
+    incentive_ids: str,
+    db: Session = Depends(get_db),
 ):
+    incentives = crud.get_incentives_by_id(db, incentive_ids.split(","))
     response = await ai.get_incentives(
-        location=f"{city} {state}", categories=categories.split(",")
+        location=f"{city} {state}", incentives=incentives
     )
     return {"response": response}
 
@@ -53,7 +55,7 @@ async def get_incentive_types(db: Session = Depends(get_db)):
     return {"response": incentives}
 
 
-@app.post("/estimates/")
+@app.get("/estimates/")
 async def get_estimates(
     lat: float,
     lng: float,
@@ -82,9 +84,8 @@ async def get_estimates(
 async def get_installers_by_type(
     city: str, state: str, type: str, db: Session = Depends(get_db)
 ):
-    incentive = crud.get_incentive(db, type)
-    response = await ai.get_installers(incentive, f"{city} {state}")
-    return {"response": response}
+    # todo, add installers to database or use external api
+    pass
 
 
 @app.get("/products/type_id/{type_id}/")

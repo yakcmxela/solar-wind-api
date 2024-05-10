@@ -1,4 +1,3 @@
-import json
 from ambient_api.ambientapi import AmbientAPI
 from requests import get
 
@@ -27,3 +26,8 @@ class WeatherAPI:
             "solar_radiation": solar_radiation,
             "wind_speed": wind_speed,
         }
+    
+    async def get_weather_by_station():
+        # Todo
+        # self.api.get_weather()
+        pass

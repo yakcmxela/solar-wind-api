@@ -65,8 +65,14 @@ async def get_estimates(
     wind_turbine_count: int,
     db: Session = Depends(get_db),
 ):
-    solar_product = crud.get_product_by_id(db, solar_product_id)
-    wind_product = crud.get_product_by_id(db, wind_product_id)
+    solar_product: models.Product = None
+    if solar_product_id:
+        solar_product = crud.get_product_by_id(db, solar_product_id)
+
+    wind_product: models.Product = None
+    if wind_product_id:
+        wind_product = crud.get_product_by_id(db, wind_product_id)
+        
     weather_data = await weather.get_weather_by_coords(lat, lng)
 
     response = await ai.get_estimates(

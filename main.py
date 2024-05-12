@@ -35,6 +35,11 @@ app.add_middleware(
 )
 
 
+@app.get("/")
+async def root():
+    return {"message": "Hello World"}
+
+
 @app.get("/incentives/")
 async def get_incentives(
     city: str,
@@ -72,7 +77,7 @@ async def get_estimates(
     wind_product: models.Product = None
     if wind_product_id:
         wind_product = crud.get_product_by_id(db, wind_product_id)
-        
+
     weather_data = await weather.get_weather_by_coords(lat, lng)
 
     response = await ai.get_estimates(

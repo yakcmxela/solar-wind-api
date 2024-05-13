@@ -32,8 +32,8 @@ jobs:
           aws sts get-caller-identity
       - name: Create CodeDeploy Deployment
         id: deploy
-        run: |
-          aws deploy create-deployment \
+        run: | 
+          aws deploy create-deployment \ 
           --application-name solar-wind-api \ 
           --deployment-group-name solar-wind-app-main \ 
           --deployment-config-name CodeDeployDefault.AllAtOnce \ 

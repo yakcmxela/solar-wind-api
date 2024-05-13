@@ -1,25 +1,26 @@
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 env:
-  AWS_REGION : "us-east-2"
+  AWS_REGION: "us-east-2"
 permissions:
-      id-token: write
-      contents: read
+  id-token: write
+  contents: read
 jobs:
-  AssumeRoleAndCallIdentity:
+  deploy:
+    name: Deploy to AWS
     runs-on: ubuntu-latest
+    strategy: 
+      matrix:
+        app-name: [solar-wind-api]
+        deployment-group-name: [solar-wind-app-main]
+        repo: ['yakcmxela/solar-wind-api']
     steps:
       - name: Git clone the repository
-        uses: actions/checkout@v3
-      - name: Install AWS CLI 
-        run: |
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-          unzip awscliv2.zip
-          sudo ./aws/install --update
+      - uses: actions/checkout@v3
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v1.7.0
         with:
@@ -36,4 +37,5 @@ jobs:
           --application-name solar-wind-api \ 
           --deployment-group-name solar-wind-app-main \
           --deployment-config-name CodeDeployDefault.AllAtOnce \
+          --description "Deploying ${{ matrix.app-name }}-${{ github.sha }}" \
           --github-location repository=${{ github.repository }},commitId=${{ github.sha }}

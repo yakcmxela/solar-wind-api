@@ -10,7 +10,7 @@ from internal.weather import WeatherAPI
 models.Base.metadata.create_all(bind=database.engine)
 
 origins = [
-    "http://localhost:3000",
+    "http://localhost:*",
     "https://solar-wind.vercel.app",
 ]
 

@@ -33,9 +33,4 @@ jobs:
       - name: Create CodeDeploy Deployment
         id: deploy
         run: |
-          aws deploy create-deployment \
-          --application-name solar-wind-api \
-          --deployment-group-name solar-wind-app-main \
-          --deployment-config-name CodeDeployDefault.AllAtOnce \ 
-          --description "Deploying ${{ matrix.app-name }}-${{ github.sha }}" \
-          --github-location repository=${{ github.repository }},commitId=${{ github.sha }}
+          aws deploy create-deployment --application-name solar-wind-api --deployment-group-name solar-wind-app-main --deployment-config-name CodeDeployDefault.AllAtOnce --description "Deploying ${{ matrix.app-name }}-${{ github.sha }}" --github-location repository=${{ github.repository }},commitId=${{ github.sha }}

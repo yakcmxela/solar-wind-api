@@ -36,7 +36,7 @@ app.add_middleware(
 )
 
 
-@app.get("/incentives")
+@app.get("/incentives/")
 async def get_incentives(
     city: str,
     state: str,
@@ -50,13 +50,13 @@ async def get_incentives(
     return {"response": response}
 
 
-@app.get("/incentives/types")
+@app.get("/incentives/types/")
 async def get_incentive_types(db: Session = Depends(get_db)):
     incentives = crud.get_incentives(db)
     return {"response": incentives}
 
 
-@app.get("/estimates")
+@app.get("/estimates/")
 async def get_estimates(
     lat: float,
     lng: float,
@@ -87,7 +87,7 @@ async def get_estimates(
     return {"response": response}
 
 
-@app.get("/installers")
+@app.get("/installers/")
 async def get_installers_by_type(
     city: str, state: str, type: str, db: Session = Depends(get_db)
 ):
@@ -95,14 +95,14 @@ async def get_installers_by_type(
     pass
 
 
-@app.get("/products/type_id/{type_id}")
+@app.get("/products/type_id/{type_id}/")
 def get_products_by_type_id(type_id: str, db: Session = Depends(get_db)):
     print(type_id)
     products = crud.get_products_by_type_id(db, type_id)
     return {"response": products}
 
 
-@app.get("/products/type/{type}")
+@app.get("/products/type/{type}/")
 def get_products_by_type(type: str, db: Session = Depends(get_db)):
     products = crud.get_products_by_type(db, type)
     return {"response": products}

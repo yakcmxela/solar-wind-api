@@ -11,6 +11,7 @@ models.Base.metadata.create_all(bind=database.engine)
 
 origins = [
     "http://localhost:3000",
+    "https://solar-wind.vercel.app",
 ]
 
 ai = RenewableAI()
@@ -33,11 +34,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
 
 
 @app.get("/incentives/")
